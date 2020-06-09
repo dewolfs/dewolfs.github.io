@@ -18,7 +18,7 @@ social-linkedin: samuel-de-wolf # add your Linkedin handle
 #discus-identifier: mr-brown # add your discus identifier
 
 # Tracker
-analytics: # Google Analytics
+analytics: UA-168839483-1 # Google Analytics
 
 # Build Settings
 markdown: kramdown
