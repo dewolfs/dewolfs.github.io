@@ -1,0 +1,33 @@
+title: Sam De Wolf | Microsoft Azure, Kubernetes & Cloud Native
+description: Kubernetes, Azure, Cloud Native
+permalink: ':title/'
+baseurl: "" # the subpath of your site, e.g. /blog
+url: "" # the base hostname & protocol for your site, e.g. http://example.com
+site-twitter: #if your site has a twitter account, enter it here
+
+# Author Settings
+author: Sam De Wolf # add your name
+author-img: bio-photo.jpg # add your photo
+about-author: Focus on cloud-native application architectures using container technologies on Microsoft Azure. # add description
+social-twitter: sam_dewolf # add your Twitter handle
+#social-facebook: # add your Facebook handle
+social-github: dewolfs # add your Github handle
+social-linkedin: samuel-de-wolf # add your Linkedin handle
+
+# Disqus
+#discus-identifier: mr-brown # add your discus identifier
+
+# Tracker
+analytics: # Google Analytics
+
+# Build Settings
+markdown: kramdown
+plugins:
+  - jekyll-sitemap
+  - jekyll-paginate
+  - jemoji
+
+paginate: 8
+paginate_path: "/page/:num"
+
+exclude: ["node_modules", "gulpfile.js", "package.json", "yarn.lock", "Gemfile", "Gemfile.lock", "README.md"]
