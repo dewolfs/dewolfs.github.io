@@ -33,7 +33,7 @@ Before we start with the configuration of Grafana we first need to [deploy our A
 
 In order to use Azure Active Directory as identity provider for Grafana we must first create an Azure Active Directory App registration.  
 
-![redirectURI]({{site.baseurl}}/assets/img/2020-09-10-redirecturi.gif)
+![redirect]({{site.baseurl}}/assets/img/2020-09-10-redirecturi.gif)
 
 As RedirectURI we specify our public DNS hostname of grafana + **/login/azuread**.  This will allow Azure Active Directory to redirect us once we have successfully authenticated.
 
