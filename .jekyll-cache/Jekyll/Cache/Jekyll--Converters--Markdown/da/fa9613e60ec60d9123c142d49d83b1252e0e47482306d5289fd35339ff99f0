@@ -1,0 +1,121 @@
+I"�#<p>Now that we have our application inside our Azure AKS up and running we want to make it available to the outside world in a secure and scalable fashion.
+How can we handle traffic coming towards our cluster from external facing clients?  How can we intelligently and quickly route the traffic without having to deploy a ton of layer 4 load balancers.</p>
+
+<p><em>We continue on the implementation we have discussed in the previous post <a href="/monitoring-net-core-application-with-prometheus-on-azure-aks/">Monitoring .Net Core Application with Prometheus on Azure AKS</a></em></p>
+
+<h1 id="1-introduction">1. Introduction</h1>
+
+<p>The Kubernetes ingress resource provides a simple way to configure external layer 7 load balancing for applications on Kubernetes.  It functions as the entrance into our applications, <em>the metaphorical gate</em>.  We can integrate our applications and traffic in a natural, Kubernetes-native way using the built-in ingress resource to solve common access problems and empower users to build software for handling custom traffic patterns.</p>
+
+<p>The ingress controller acts as the entry point for all incoming traffic to applications running on Kubernetes.
+Ingress is giving your services externally-reachable urls, load balance traffic, terminate SSL, offer names based virtual hosting,etc…</p>
+
+<p>The following image gives you an overview of what we will implement today:</p>
+
+<p align="center">
+<img src="/assets/img/2020-08-25-design.gif" />
+</p>
+
+<p>A cloud environment is by defintion extremely volatile.  Luckily the creation and management of TLS certificates in a Kubernetes environment can be automated with Cert-manager to have a consistent, secure and declared-as-code machine identity protection.</p>
+
+<p><strong><a href="https://cert-manager.io/">Cert-manager</a></strong> automates the management and issuance of TLS certificates from various issuing sources.  It will periodically check the validity of the certificates and will start the renewal process if necessary.</p>
+
+<ul>
+  <li>
+    <p>A <strong>ClusterIssuer</strong> represents a certificate Authority that is able to generate signed certificates by honoring certificate signing requests.  A certificate is a namespaced resource that references an ClusterIssuer that determines what will be honoring the certificate request.</p>
+  </li>
+  <li>
+    <p>When a certificate is created, a corresponding CertificateRequest resource is created by Cert-manager containing the encoded X509 certificate request and issuer reference.</p>
+  </li>
+</ul>
+
+<p>Cert-manager is using <strong><a href="https://letsencrypt.org/">Let’s Encrypt</a></strong> which is a free, automated and open Certificate Authority.</p>
+
+<p>Our application should be publicly accessible by routing external requests to the pods in our Kubernetes service offering a controlled network channel.  Kubernetes ingress describes how to route different types of requests to different services based on predetermined set of rules.</p>
+
+<h1 id="2-installing-and-configuring-nginx-ingress-controller">2. Installing and configuring NGINX Ingress Controller</h1>
+
+<p>We start with the first Azure DevOps pipeline <strong>1-nginx-cert-manager-pipeline.yml</strong> to install the NGINX Ingress controller and the Cert-manager charts via Helm.  Automatically a public IP gets assigned to our NGINX Ingress controller which is the default behaviour in public cloud environments. If you now browse to this public IP you will land on the default “404 - No backend configured” page.</p>
+
+<p><img src="/assets/img/2020-08-25-ingress.gif" alt="ingress" /></p>
+
+<h1 id="3-setup-cert-manager-with-lets-encrypt">3. Setup Cert-manager with Let’s Encrypt</h1>
+
+<p>The deployment of Cert-manager via Helm will give us the following result:</p>
+
+<p><img src="/assets/img/2020-08-25-cert-manager.gif" alt="certmanager" /></p>
+
+<p>Besides these objects we also need an <strong>Issuer</strong> which is a Certificate Authority who provisions TLS certificates for a domain.  We choose a <strong>ClusterIssuer</strong> which can be used cluster-wide in all namespaces.</p>
+
+<p><img src="/assets/img/2020-08-25-cluster-issuer.gif" alt="clusterissuer" /></p>
+
+<p>The <strong>spec.acme.privateKeySecretKeyRef</strong> is the Kubernetes secret used to store the ACME account private key that Cert-manager creates for us.</p>
+
+<p>Cert-manager will create custom resources to issue a certificate, orders and challenges.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>kubectl get challenges, orders
+<span class="nv">$ </span>kubectl describe challenge &lt;insert challenge-name&gt;
+<span class="nv">$ </span>kubectl describe order &lt;insert order-name&gt;
+</code></pre></div></div>
+
+<p>Use the following commands to view the outcome:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>kubectl get clusterissuer,certificates <span class="nt">--all-namespaces</span>
+<span class="nv">$ </span>kubectl describe certificate thebank-ingress.westeurope.cloudapp.azure.com <span class="nt">-n</span> thebank
+</code></pre></div></div>
+
+<h1 id="4-deploy-kubernetes-ingress">4. Deploy Kubernetes ingress</h1>
+
+<p>We re-use the Azure DevOps pipeline <strong>2-thebank-app-pipeline.yml</strong> from our <a href="/monitoring-net-core-application-with-prometheus-on-azure-aks/">previous blogpost</a>. Additionally we add a pipeline-task to deploy the Kubernetes ingress manifest for our application in the application namespace.</p>
+
+<p><img src="/assets/img/2020-08-25-ingress-detail.gif" alt="ingress" /></p>
+
+<p>The Kubernetes annotation <strong>nginx.ingress.kubernetes.io/force-ssl-redirect: “true”</strong> in the ingress manifest will redirect traffic from http to https when TLS is enabled on the ingress.</p>
+
+<p>We specify in the annotation also the <strong>ingress.class</strong> to <strong>nginx</strong> to make sure that this ingress can only be served by our NGINX ingress controller.  The <strong>spec.tls.secretName</strong> is the Kubernetes secret to store the certificate received from <strong>Let’s Encrypt</strong>.</p>
+
+<p><img src="/assets/img/2020-08-25-ingress-anno.gif" alt="annotation" /></p>
+
+<p>The end-result gives us a TLS secured website with a valid certificate.</p>
+
+<p><img src="/assets/img/2020-08-25-https.gif" alt="https" /></p>
+
+<h2 id="41-tls-verification">4.1 TLS verification</h2>
+
+<p>Let’s verify with <a href="https://www.ssllabs.com/ssltest">SSL Labs</a> to identify we are in good shape for our TLS implementation.</p>
+
+<p><img src="/assets/img/2020-08-25-ssllabs.gif" alt="https" /></p>
+
+<h1 id="5-troubleshooting-tips">5. Troubleshooting tips</h1>
+
+<h2 id="51-check-nginx-configuration">5.1 Check NGINX configuration</h2>
+
+<p>We can verify the NGINX config file inside the NGINX controller pod.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>kubectl <span class="nb">exec</span> <span class="nt">-it</span> <span class="nt">-n</span> ingress nginx-ingress-controller-f4979b754-pn6ld /bin/bash
+
+bash-5.0<span class="nv">$ </span><span class="nb">cat</span> /etc/nginx/nginx.conf | <span class="nb">grep</span> <span class="nt">-A</span> 10 thebank
+</code></pre></div></div>
+<h2 id="52-verify-nginx-container-logs">5.2 Verify NGINX container logs</h2>
+
+<p>The log file of the NGINX Ingress controller will give you more information about the applied Ingress rules.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>kubectl logs <span class="nt">-n</span> ingress nginx-ingress-controller-f4979b754-pn6ld
+</code></pre></div></div>
+
+<h2 id="53-kubernetes-service-reachability-within-the-cluster">5.3 Kubernetes service reachability within the cluster</h2>
+
+<p>To exclude Kubernetes service misconfiguration, we access the NGINX ingress controller and try to reach our application service on the internal port.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>kubectl <span class="nb">exec</span> <span class="nt">-it</span> <span class="nt">-n</span> ingress nginx-ingress-controller-f4979b754-pn6ld /bin/bash
+bash-5.0<span class="nv">$ </span>curl 10.0.207.9
+</code></pre></div></div>
+
+<h2 id="54-verify-cert-manager-container-logs">5.4 Verify Cert-manager container logs</h2>
+
+<p>The log file of the Cert-manager will give you more info about the certificate process.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>kubectl <span class="nt">--namespace</span> cert-manager logs <span class="nt">-l</span> <span class="nv">app</span><span class="o">=</span>cert-manager <span class="nt">-c</span> cert-manager
+</code></pre></div></div>
+
+<p><em>The configuration we used in this post can be found on <a href="https://github.com/dewolfs/kubernetes-nginx-certs">https://github.com/dewolfs/kubernetes-nginx-certs</a>.</em></p>
+:ET

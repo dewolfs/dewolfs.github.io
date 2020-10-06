@@ -1,0 +1,217 @@
+I"–9<p>Compliance, governance, and security are nonfunctional requirements that every system needs to satisfy. Kubernetes clusters are no different.  We need something to build preventative controls to stop unwanted changes in our clusters. We can also shift the controls left, into the our CI/CD automation, evaluating changes before they are pushed.</p>
+
+<h1 id="1-introduction">1. Introduction</h1>
+
+<p><img src="/assets/img/2020-09-28-logo.png" alt="image" style="float: left" /></p>
+
+<p>Organizations need the ability to apply rules to their workloads and services, at scale and distinct from the development of those services. Policies and policy enablement provide those governance capabilities with declarative approaches.  <strong><a href="https://github.com/open-policy-agent/gatekeeper">Open Policy Agent (OPA) Gatekeeper</a></strong> integrates with Kubernetes and is able to provide the right guardrails to enforce structure and keep your deployments running smoothly.</p>
+
+<p>Gatekeeper brings a structured schematized version via constraint templates and constraints using Kubernetes.  Rego is the language that OPA and Gatekeeper support to validate a request to the Kubernetes cluster.</p>
+
+<p>Policies are essential to the long-term success of an organization, because they encode important knowledge about how to comply with legal requirements, avoid repeating mistakes, and so on.</p>
+
+<p>For example, a custom policy could be that developers are ONLY allowed to reference container images in their deployments from your own private registry. Other could be, Developers must have certain labels be present in all deployment definitions identifying the business unit to chargeback to.</p>
+
+<p><img src="/assets/img/2020-09-28-gatekeeper-design.png" alt="install" /></p>
+
+<p><em>Credits: <a href="https://kubernetes.io/blog/2019/08/06/opa-gatekeeper-policy-and-governance-for-kubernetes/">https://kubernetes.io/blog/2019/08/06/opa-gatekeeper-policy-and-governance-for-kubernetes</a></em></p>
+
+<p>A constraint template contains the Rego signature, it basically contains all the logic of what happens when.  Gatekeeper executes these constraints.  If the rule matches, the constraint is violated.</p>
+
+<p>Gatekeeper implements Open Policy Agent (OPA) as a set of Kubernetes Custom Resource Definitions (CRDs).  The CRDs are watched by OPA via Gatekeeper and it watches through the API server all of the objects that gets created through the Kubernetes API server.  This is a cloud-native way of enforcing policies.</p>
+
+<h1 id="2-installation">2. Installation</h1>
+
+<p>To install the latest version of Gatekeeper, run the following command:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply -f https://raw.githubusercontent.com/open-policy-agent/gatekeeper/master/deploy/gatekeeper.yaml
+</code></pre></div></div>
+<p>The following Kubernetes objects are created:</p>
+
+<p><img src="/assets/img/2020-09-28-install.gif" alt="install" /></p>
+
+<p>In the logs of the gatekeeper-controller-manager container you can find back the startup of the different roles:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl logs -f gatekeeper-controller-manager-6dff56479c-46sr8 -n gatekeeper-system
+</code></pre></div></div>
+
+<p>Part of the installation is the admission control webhook.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl get validatingwebhookconfiguration
+kubectl get validatingwebhookconfiguration gatekeeper-validating-webhook-configuration -o yaml
+</code></pre></div></div>
+<p>The configuration of the webhook intercepts any <strong>create</strong> or <strong>update</strong> operation on every <strong>apiGroup</strong> of every <strong>apiVersion</strong> on every <strong>resource</strong>.  All these actions will be passed to the <strong>gatekeeper-webhook-service</strong>.</p>
+
+<p><img src="/assets/img/2020-09-28-webhook.gif" alt="webhook" /></p>
+
+<h1 id="3-example-1---required-labels-on-namespace">3. Example 1 - Required labels on namespace</h1>
+
+<p>Now that we have Gatekeeper installed, we will try out a few good and bad configurations.  For our first example we want to enforce that labels are applied to the Kubernetes namespace. At the end of this blogpost you can find the link to the repo containing all the code used in this blogpost.</p>
+
+<h2 id="31-constraint-template">3.1 Constraint template</h2>
+
+<p>We have defined a constraint template which contains the Rego policy to verify the existance of Kubernetes labels.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply -f template/k8srequiredlabels_template.yaml
+</code></pre></div></div>
+
+<p>To view all the constraint templates and the individual details use the following commands:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl get constrainttemplates.templates.gatekeeper.sh -n gatekeeper-system
+kubectl get constrainttemplates k8srequiredlabels -n gatekeeper-system -o yaml
+</code></pre></div></div>
+
+<h2 id="32-constraint">3.2 Constraint</h2>
+
+<p>The constraint itself contains the parameters that are used in collaboration with the constraint template.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply -f constraint/owner_must_be_provided.yaml
+</code></pre></div></div>
+
+<h2 id="33-results">3.3 Results</h2>
+
+<p>Now that we have our Gatekeeper constraint in place, we are going to create a new Kubernetes namespace without any label.  The error message is clearly stating why the deployment is failed and also which constraint is blocking this.</p>
+
+<p><img src="/assets/img/2020-09-28-label-bad.gif" alt="webhook" /></p>
+
+<p>If we provide a Kubernetes manifest with a label, the namespace gets created without errors.</p>
+
+<p><img src="/assets/img/2020-09-28-label-good.gif" alt="webhook" /></p>
+
+<p>Now that we have the constraint in-place inside our Kubernetes cluster we want to get some knowledge on how many violations we count.  The constraint contains a violations section, describing the namespaces that are not compliant.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl describe k8srequiredlabels.constraints.gatekeeper.sh 
+</code></pre></div></div>
+
+<p><img src="/assets/img/2020-09-28-label-violations.gif" alt="webhook" /></p>
+
+<h1 id="4-example-2---allowed-container-repository">4. Example 2 - Allowed container repository</h1>
+
+<p>In the second example we will configure a policy to only allow pull container images from a known container registry.</p>
+
+<h2 id="41-template">4.1 Template</h2>
+
+<p>First we deploy the constraint via the following command:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply -f template/k8sallowedrepos_template.yaml
+</code></pre></div></div>
+<p>To view the constraint templates and the individual details use the following commands:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl get constrainttemplates.templates.gatekeeper.sh -n gatekeeper-system
+kubectl get constrainttemplates k8sallowedrepos -n gatekeeper-system -o yaml
+</code></pre></div></div>
+
+<h2 id="42-constraint">4.2 Constraint</h2>
+
+<p>The constraint itself contains the parameters that are used in collaboration with the constraint template.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply -f constraint/limit_repo.yaml
+</code></pre></div></div>
+
+<h2 id="43-results">4.3 Results</h2>
+
+<p>When we launch the Kubernetes deployment which is referencing a public container repository, it wil get created without error.  However, when we verify our running pods in the production namespace, we canâ€™t find any pods. When we verify the events in the namespace, we understand that the container repository defined in our Kubernetes manifest is not allowed.</p>
+
+<p><img src="/assets/img/2020-09-28-repo-bad.gif" alt="webhook" /></p>
+
+<p>If we now execute a deployment where we reference to a private container repository allowed by our constraint, our deployments gets successfully deployed and our pod are also created.</p>
+
+<p><img src="/assets/img/2020-09-28-repo-good.gif" alt="webhook" /></p>
+
+<p>Looking to the details of the allowed repository constraint we can see how many violations exist.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl describe k8sallowedrepos.constraints.gatekeeper.sh 
+</code></pre></div></div>
+<h2 id="5-example-3---container-limits">5. Example 3 - Container limits</h2>
+
+<p>For our third example we want to make sure that each Kubernetes deployment has container resource limits set in the manifest file.</p>
+
+<h2 id="51-template">5.1 Template</h2>
+
+<p>First we deploy the constraint via the following command:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply -f template/k8scontainerlimits_template.yaml
+</code></pre></div></div>
+<p>To view the constraint templates and the individual details use the following commands:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl get constrainttemplates.templates.gatekeeper.sh -n gatekeeper-system
+kubectl get constrainttemplates k8scontainerlimits -n gatekeeper-system -o yaml
+</code></pre></div></div>
+
+<h2 id="52-constraint">5.2 Constraint</h2>
+
+<p>The constraint itself contains the parameters that are used in collaboration with the constraint template.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply -f constraint/containers_must_be_limited.yaml
+</code></pre></div></div>
+<h2 id="53-results">5.3 Results</h2>
+
+<p>First we apply a Kubernetes deployment with no container resource limits.  The error message clearly indicates what the problem is.</p>
+
+<p><img src="/assets/img/2020-09-28-limit-bad.gif" alt="webhook" /></p>
+
+<p>If we now execute a deployment with container resource limits, the deployment and pod get deployment without a problem.</p>
+
+<p><img src="/assets/img/2020-09-28-limit-good.gif" alt="webhook" /></p>
+
+<h1 id="6-dryrun">6. Dryrun</h1>
+
+<p>If we have a brownfield cluster with a lot of resources and we want to bring the cluster into compliance, we can start with the enforcement action of dryrun.  This will allows us to get visibility and pass through all policies resulting in finding out what is out of compliance and take action to fix things.<br />
+Add <strong>constraints.spec.enforcementAction</strong> to enable dryrun and to see the state of compliance of the cluster.</p>
+
+<p><img src="/assets/img/2020-09-28-dryrun.gif" alt="dryrun" /></p>
+
+<h1 id="7-monitoring">7. Monitoring</h1>
+
+<p>Prometheus is supported as backend for metrics of Gatekeeper.  There are metrics for:</p>
+<ul>
+  <li>violations per enforcement action</li>
+  <li>last audit timestamp</li>
+  <li>audit duration</li>
+  <li>total number of constraint templates and constraints</li>
+</ul>
+
+<p>In order to enable Prometheus to scrape the metrics of Gatekeeper, we have to add the following Kubernetes annotations to the deployment of the <strong>controller manager</strong>.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl annotate deploy gatekeeper-controller-manager -n gatekeeper-system prometheus.io/port=8888
+kubectl annotate deploy gatekeeper-controller-manager -n gatekeeper-system prometheus.io/scrape=true
+kubectl annotate deploy gatekeeper-controller-manager -n gatekeeper-system container.seccomp.security.alpha.kubernetes.io/manager=runtime/default
+</code></pre></div></div>
+
+<p>We repeat the same operation for the <strong>audit</strong> deployment of Gatekeeper.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl annotate deploy gatekeeper-audit -n gatekeeper-system prometheus.io/port=8888
+kubectl annotate deploy gatekeeper-audit -n gatekeeper-system prometheus.io/scrape=true
+kubectl annotate deploy gatekeeper-audit -n gatekeeper-system container.seccomp.security.alpha.kubernetes.io/manager=runtime/default
+</code></pre></div></div>
+
+<p>As last, we need to add the targets of Gatekeeper to the Prometheus configuration.  The Prometheus configration can be adjusted via the Kubernetes configmap.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl edit cm prometheus-server
+</code></pre></div></div>
+
+<p>Add the following code block to the static configuration file.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    - job_name: gkaudit
+      static_configs:
+      - targets:
+        - &lt;gatekeeper_audit_service_ip&gt;:8888
+    - job_name: gkmanager
+      static_configs:
+      - targets:
+        - &lt;gatekeeper_manager_service_ip&gt;:8888
+</code></pre></div></div>
+
+<p>When we open the Prometheus UI, we are able to select the Gatekeeper metrics.  Prometheus Alertmanager can be configured to send a notification when a threshold is breached.</p>
+
+<p><img src="/assets/img/2020-09-28-prometheus.gif" alt="prometheus" /></p>
+
+<h1 id="8-conftest-in-cicd">8. Conftest in CI/CD</h1>
+
+<p>Gatekeeper templates and constraints make sure that requests are validated against Rego policies before anything happens inside your Kubernetes cluster.  Additionally we can make sure that we already scan the Kubernetes manifests in our repository to verify if a violation would occur at deployment time.</p>
+
+<p><a href="https://www.conftest.dev/">Conftest</a> helps you write tests against structured configuration data.</p>
+
+<p>In our repository, we have defined an Azure DevOps pipeline <strong>1-conftest.yml</strong> which runs on a scheduled daily basis during the night.  The pipeline contains executes a scan of the Kubernetes manifests against the Rego policies.</p>
+
+<p><img src="/assets/img/2020-09-28-pipeline-fail.gif" alt="pipeline-fail" /></p>
+
+<p><img src="/assets/img/2020-09-28-pipeline-success.gif" alt="pipeline-success" /></p>
+
+<p><em>The configuration we used in this post can be found on <a href="https://github.com/dewolfs/opa-gatekeeper-conftest">https://github.com/dewolfs/opa-gatekeeper-conftest</a>.</em></p>
+:ET
