@@ -14,17 +14,17 @@
     <meta content="article" property="og:type">
   
   
-    <meta content="GitOps" property="og:description">
+    <meta content="Azure MI" property="og:description">
   
   
-    <meta content="http://localhost:4000/access-keyvault-from-aks-via-managed-identity/" property="og:url">
+    <meta content="dewolfs.github.io/access-keyvault-from-aks-via-managed-identity/" property="og:url">
   
   
-    <meta content="2020-12-12T12:30:20+01:00" property="article:published_time">
-    <meta content="http://localhost:4000/about/" property="article:author">
+    <meta content="2020-12-21T04:30:20+01:00" property="article:published_time">
+    <meta content="dewolfs.github.io/about/" property="article:author">
   
   
-    <meta content="http://localhost:4000/assets/img/2020-12-12-managed-identity.jpg" property="og:image">
+    <meta content="dewolfs.github.io/assets/img/2020-12-21-managed-identity.jpg" property="og:image">
   
   
     
@@ -48,16 +48,16 @@
     <meta name="twitter:title" content="Access Azure KeyVault from Azure AKS using Azure Managed Identity">
   
   
-    <meta name="twitter:url" content="http://localhost:4000/access-keyvault-from-aks-via-managed-identity/">
+    <meta name="twitter:url" content="dewolfs.github.io/access-keyvault-from-aks-via-managed-identity/">
   
   
-    <meta name="twitter:description" content="GitOps">
+    <meta name="twitter:description" content="Azure MI">
   
   
-    <meta name="twitter:image:src" content="http://localhost:4000/assets/img/2020-12-12-managed-identity.jpg">
+    <meta name="twitter:image:src" content="dewolfs.github.io/assets/img/2020-12-21-managed-identity.jpg">
   
 
-	<meta name="description" content="GitOps">
+	<meta name="description" content="Azure MI">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 	<meta property="og:image" content="">
@@ -119,7 +119,7 @@
     
     <div class="page-cover-image">
       <figure>
-        <img class="page-image" src=/assets/img/2020-12-12-managed-identity.jpg alt="Access Azure KeyVault from Azure AKS using Azure Managed Identity">
+        <img class="page-image" src=/assets/img/2020-12-21-managed-identity.jpg alt="Access Azure KeyVault from Azure AKS using Azure Managed Identity">
         
           <figcaption>Photo By Daniel Seßler on Unsplash</figcaption>
         
@@ -129,7 +129,7 @@
     <div class="wrap-content">
       <header class="header-page">
         <h1 class="page-title">Access Azure KeyVault from Azure AKS using Azure Managed Identity</h1>
-        <div class="page-date"><span>2020, Dec 12&nbsp;&nbsp;&nbsp;&nbsp;</span></div>
+        <div class="page-date"><span>2020, Dec 21&nbsp;&nbsp;&nbsp;&nbsp;</span></div>
       </header>
       <p>So you are running your applications in Kubernetes but do you already have a solution for managing and storing all your application secrets? How do you tell Kubernetes to use the same source of truth for secrets avoiding secrets sprawl?</p>
 
@@ -224,7 +224,7 @@ az role assignment create --role "Managed Identity Operator" --assignee $CLIENTI
 
 <h2 id="25-pipeline">2.5 Pipeline</h2>
 
-<p>We have covered a lot of configuration steps.  To standardize the deployment and avoid human error, an Azure DevOps pipeline is made available.  You can find the pipeline <strong>aks-msi-kv-pipeline.yml</strong> in the Github repo link below.</p>
+<p>We have covered a lot of configuration steps.  To standardize the deployment and avoid human error, an Azure DevOps pipeline is made available.  You can find the pipeline <strong>aks-mi-kv-pipeline.yml</strong> in the Github repo link below.</p>
 
 <h1 id="3-demo-application-deployment">3. Demo application deployment</h1>
 
@@ -262,19 +262,19 @@ echo $value
 <h1 id="5-troubleshooting">5. Troubleshooting</h1>
 
 <p>The following commands will help you in case you run into issues:</p>
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl get AzureIdentity --all-namespaces -o yaml
-kubectl get AzureIdentityBinding --all-namespaces -o yaml
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl get AzureIdentity -A -o yaml
+kubectl get AzureIdentityBinding -A -o yaml
 kubectl get AzureAssignedIdentities -A -o yaml # this will show which Pod(s) has been assigned to the managed identity
 kubectl get AzureAssignedIdentities -A -o jsonpath='{range .items[*]}{@.spec.pod}{"\t"}{@.metadata.namespace}{"\t"}{@.spec.azureIdentityRef.metadata.name}{"\n"}'
 </code></pre></div></div>
 
-<p><em>The configuration we used in this post can be found on <a href="https://github.com/dewolfs/aks-msi-kv">https://github.com/dewolfs/aks-msi-kv</a>.</em></p>
+<p><em>The configuration we used in this post can be found on <a href="https://github.com/dewolfs/aks-managedIdentity-kv">https://github.com/dewolfs/aks-managedIdentity-kv</a>.</em></p>
 
       <div class="page-footer">
         <div class="page-share">
-          <a href="https://twitter.com/intent/tweet?text=Access Azure KeyVault from Azure AKS using Azure Managed Identity&url=http://localhost:4000/access-keyvault-from-aks-via-managed-identity/" title="Share on Twitter" rel="nofollow" target="_blank">Twitter</a>
-          <a href="https://facebook.com/sharer.php?u=http://localhost:4000/access-keyvault-from-aks-via-managed-identity/" title="Share on Facebook" rel="nofollow" target="_blank">Facebook</a>
-          <a href="https://plus.google.com/share?url=http://localhost:4000/access-keyvault-from-aks-via-managed-identity/" title="Share on Google+" rel="nofollow" target="_blank">Google+</a>
+          <a href="https://twitter.com/intent/tweet?text=Access Azure KeyVault from Azure AKS using Azure Managed Identity&url=dewolfs.github.io/access-keyvault-from-aks-via-managed-identity/" title="Share on Twitter" rel="nofollow" target="_blank">Twitter</a>
+          <a href="https://facebook.com/sharer.php?u=dewolfs.github.io/access-keyvault-from-aks-via-managed-identity/" title="Share on Facebook" rel="nofollow" target="_blank">Facebook</a>
+          <a href="https://plus.google.com/share?url=dewolfs.github.io/access-keyvault-from-aks-via-managed-identity/" title="Share on Google+" rel="nofollow" target="_blank">Google+</a>
         </div>
         <div class="page-tag">
           

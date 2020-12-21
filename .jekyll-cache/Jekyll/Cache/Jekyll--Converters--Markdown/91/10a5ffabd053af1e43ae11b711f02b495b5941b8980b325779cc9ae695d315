@@ -1,4 +1,4 @@
-I"!,<p>So you are running your applications in Kubernetes but do you already have a solution for managing and storing all your application secrets? How do you tell Kubernetes to use the same source of truth for secrets avoiding secrets sprawl?</p>
+I"ï+<p>So you are running your applications in Kubernetes but do you already have a solution for managing and storing all your application secrets? How do you tell Kubernetes to use the same source of truth for secrets avoiding secrets sprawl?</p>
 
 <h1 id="1-introduction">1. Introduction</h1>
 
@@ -6,8 +6,7 @@
 
 <p>The image below describes the solution how an application running inside an Kubernetes Pod can access secrets in an Azure KeyVault with the help of Azure Managed Identities.</p>
 
-<p><img src="/assets/img/blog3.jpg" alt="design" />
-<img src="/assets/img/2020-12-12-msi-design.png" alt="design" /></p>
+<p><img src="/assets/img/2020-12-12-msi-design.png" alt="design" /></p>
 
 <h1 id="2-deployment">2. Deployment</h1>
 
@@ -17,11 +16,12 @@
 </code></pre></div></div>
 <p><img src="/assets/img/2020-12-12-rbac-enabled.png" alt="rbac-enabled" /></p>
 
-<h1 id="21-deploy-aad-pod-identity">2.1 Deploy AAD Pod Identity</h1>
+<h2 id="21-deploy-aad-pod-identity">2.1 Deploy AAD Pod Identity</h2>
+
 <p><strong><a href="https://github.com/Azure/aad-pod-identity">AAD Pod Identity</a></strong> enables Kubernetes applications to access cloud resources with Azure Active Directory.  Installing AAD Pod Identity is a straightforward process.</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply -f https://raw.githubusercontent.com/Azure/aad-pod-identity/master/deploy/infra/deployment-rbac.yaml
 </code></pre></div></div>
-<p>As a result, the Kubernetes API is extended with some custom resource defintions.</p>
+<p>As a result, the Kubernetes API is extended with some custom resource defintions (CRD).</p>
 <ul>
   <li><strong>Managed Identity Controller (MIC)</strong> is a central Pod with permissions to query the Kubernetes API server and checks for an Azure identity mapping that corresponds to a Pod.</li>
   <li><strong>Node-Managed Identity (NMI)</strong> server listens for Pod requests to Azure services</li>
@@ -40,7 +40,7 @@
 
 <p><img src="/assets/img/2020-12-12-identity-details.png" alt="identity" /></p>
 
-<h1 id="22-deploy-crd-azure-identity-and-binding">2.2 Deploy CRD Azure Identity and binding</h1>
+<h2 id="22-deploy-crd-azure-identity-and-binding">2.2 Deploy CRD Azure Identity and binding</h2>
 
 <p>Next, we will define the Kubernetes Azure Identity and create the binding using the details of our Azure managed identity.</p>
 
@@ -57,7 +57,7 @@
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl get azureIdentity 
 kubectl get azureIdentityBinding
 </code></pre></div></div>
-<h1 id="23-configure-rbac-for-the-aks-system-assigned-managed-identity">2.3 Configure RBAC for the AKS System-assigned managed identity</h1>
+<h2 id="23-configure-rbac-for-the-aks-system-assigned-managed-identity">2.3 Configure RBAC for the AKS System-assigned managed identity</h2>
 
 <p>If you create an AKS cluster and you enable managed identity as authentication method, it will create the identity for your Azure virtual machine scale-set.
 This system-assigned managed identity is behind the covers just an Azure Active Directory service principal which you can find back in your  <strong>Azure Active Directory &gt; Enterprise Applications</strong>.</p>
@@ -81,7 +81,7 @@ az role assignment create --role "Virtual Machine Contributor" --assignee $CLIEN
 az role assignment create --role "Managed Identity Operator" --assignee $CLIENTID --scope /subscriptions/$SUBID/resourcegroups/$AKS_RESOURCE_GROUP
 </code></pre></div></div>
 
-<h1 id="24-assign-azure-keyvault-access-policies">2.4 Assign Azure KeyVault access policies</h1>
+<h2 id="24-assign-azure-keyvault-access-policies">2.4 Assign Azure KeyVault access policies</h2>
 
 <p>The last step is to provide access to the Azure KeyVault.  By default, only the creator of an Azure KeyVault has full access to secrets, keys and certificates.  In our scenario, we need to provide the secret management permissions to our System-assigned managed identity.  This will enable the Kubernetes Pods to get the secrets from the Azure Key Vault.</p>
 
@@ -89,9 +89,9 @@ az role assignment create --role "Managed Identity Operator" --assignee $CLIENTI
 
 <p><img src="/assets/img/2020-12-12-keyvault.png" alt="azuread" /></p>
 
-<h1 id="25-pipeline">2.5 Pipeline</h1>
+<h2 id="25-pipeline">2.5 Pipeline</h2>
 
-<p>We have covered a lot of configuration steps.  To standardize the deployment and avoid human error, an Azure DevOps pipeline is made available.  You can find the pipeline <strong>aks-msi-kv-pipeline.yml</strong> in the Github repo link below.</p>
+<p>We have covered a lot of configuration steps.  To standardize the deployment and avoid human error, an Azure DevOps pipeline is made available.  You can find the pipeline <strong>aks-mi-kv-pipeline.yml</strong> in the Github repo link below.</p>
 
 <h1 id="3-demo-application-deployment">3. Demo application deployment</h1>
 
@@ -106,7 +106,7 @@ helm install azure-samples/aks-helloworld --generate-name
 
 <h1 id="4-get-secret-from-inside-pod">4. Get secret from inside POD</h1>
 
-<p>To get confirmation our configuration was successfull, we need to enter into the Pod of our demo application.</p>
+<p>To get confirmation that our setup was successfull, we need to enter into the Pod of our demo application.</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>k exec -it &lt;pod-name&gt; bash
 </code></pre></div></div>
 <p>Install jq in the pod because we want to manipulate the output.</p>
@@ -129,11 +129,11 @@ echo $value
 <h1 id="5-troubleshooting">5. Troubleshooting</h1>
 
 <p>The following commands will help you in case you run into issues:</p>
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl get AzureIdentity --all-namespaces -o yaml
-kubectl get AzureIdentityBinding --all-namespaces -o yaml
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl get AzureIdentity -A -o yaml
+kubectl get AzureIdentityBinding -A -o yaml
 kubectl get AzureAssignedIdentities -A -o yaml # this will show which Pod(s) has been assigned to the managed identity
 kubectl get AzureAssignedIdentities -A -o jsonpath='{range .items[*]}{@.spec.pod}{"\t"}{@.metadata.namespace}{"\t"}{@.spec.azureIdentityRef.metadata.name}{"\n"}'
 </code></pre></div></div>
 
-<p><em>The configuration we used in this post can be found on <a href="https://github.com/dewolfs/aks-msi-kv">https://github.com/dewolfs/aks-msi-kv</a>.</em></p>
+<p><em>The configuration we used in this post can be found on <a href="https://github.com/dewolfs/aks-managedIdentity-kv">https://github.com/dewolfs/aks-managedIdentity-kv</a>.</em></p>
 :ET
