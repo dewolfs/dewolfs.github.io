@@ -57,7 +57,7 @@ The **vnetSubnetId** can be referenced because we have defined the **subnets arr
 
 # 3. GitHub Actions
 
-![GitHub]({{site.baseurl}}/assets/img/2021-01-11-GitHub-actions.png){: style="float: left"}
+![GitHub]({{site.baseurl}}/assets/img/2021-01-11-gitHub-actions.png){: style="float: left"}
 
 **GitHub Actions** gives teams CI capabilities, helping developers merge and deploy code many times in a single day. The silent power of GitHub Actions lies in its ability to programmatically define just about any workflow to mirror your team’s processes.
 
@@ -80,7 +80,7 @@ In GitHub, open the **Settings** menu and select **Secrets**.
 
 Provide a name for our credential and copy/paste the complete JSON output. 
 
-![secret]({{site.baseurl}}/assets/img/2021-01-11-GitHub-secret.png)
+![secret]({{site.baseurl}}/assets/img/2021-01-11-github-secret.png)
 
 We are going to make use of GitHub Actions to setup a pipeline for CI/CD.  In GitHub this is called a workflow which contains steps.
 To login to our Azure subscription we make a reference to the secret we created before called **AZURE_CREDENTIALS**.
@@ -94,34 +94,34 @@ The SubscriptionID can be retrieved from the **Azure Login** step and we save it
 
 Defining and managing your development, test, staging, and production environments using infra-as-code tools is a common practice. 
 
-![env]({{site.baseurl}}/assets/img/2021-01-11-GitHub-env.png)
+![env]({{site.baseurl}}/assets/img/2021-01-11-github-env.png)
 
 GitHub environment protection rules enable seperation of concerns between deployment and development to meet compliance and security requirements.
 
 The required reviewers environment protection rule will automatically pause a job trying to deploy to the protected environment and notifies the reviewers.
 
 Additionally we add a required reviewer before a deployment can take place to our Production environment.
-![protect]({{site.baseurl}}/assets/img/2021-01-11-GitHub-env-protect.png)
+![protect]({{site.baseurl}}/assets/img/2021-01-11-github-env-protect.png)
 
 # 4. Execution
 
 Our workflow file (.GitHub/workflows/main.yaml) contains the definition when the steps should be executed. 
 During deployment time you can view the progress in the **Actions** menu.
-![progress]({{site.baseurl}}/assets/img/2021-01-11-GitHub-progress.png)
+![progress]({{site.baseurl}}/assets/img/2021-01-11-github-progress.png)
 
 When our pipeline successfully completes the deployment to our development stage, the process is halted in a **Wait** status because a reviewer first need to approve the results before continuing.
 
-![approval]({{site.baseurl}}/assets/img/2021-01-11-GitHub-approval.png)
+![approval]({{site.baseurl}}/assets/img/2021-01-11-github-approval.png)
 
-![approval2]({{site.baseurl}}/assets/img/2021-01-11-GitHub-approval2.png)
+![approval2]({{site.baseurl}}/assets/img/2021-01-11-github-approval2.png)
 
 When all steps are finished, you can view the **Environments** status at the startpage of your GitHub project.
 
-![env2]({{site.baseurl}}/assets/img/2021-01-11-GitHub-env2.png)
+![env2]({{site.baseurl}}/assets/img/2021-01-11-github-env2.png)
 
 ## 4.1 Tags
 
 A GitHub Actions workflow status badge can be added to your README project file to give you a quick glance on latest build/deploy status.
-![badge]({{site.baseurl}}/assets/img/2021-01-11-GitHub-badge.png)
+![badge]({{site.baseurl}}/assets/img/2021-01-11-github-badge.png)
 
 *The configuration we used in this post can be found on <https://GitHub.com/dewolfs/bicep-github-actions>.*
