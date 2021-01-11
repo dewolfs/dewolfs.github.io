@@ -59,7 +59,7 @@ The **vnetSubnetId** can be referenced because we have defined the **subnets arr
 
 ![github]({{site.baseurl}}/assets/img/2021-01-11-github-actions.png){: style="float: left"}
 
-**GitHub** **Actions** gives teams CI capabilities, helping developers merge and deploy code many times in a single day. The silent power of GitHub Actions lies in its ability to programmatically define just about any workflow to mirror your team’s processes.
+GitHub Actions gives teams CI capabilities, helping developers merge and deploy code many times in a single day. The silent power of GitHub Actions lies in its ability to programmatically define just about any workflow to mirror your team’s processes.
 
 GitHub Actions gives us the power to use our repositories to speed up the delivery of our software and applications, all from one central point of truth.
 
