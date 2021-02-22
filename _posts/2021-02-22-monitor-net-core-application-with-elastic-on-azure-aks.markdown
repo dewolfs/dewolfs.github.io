@@ -18,7 +18,7 @@ The recent technological improvements have make it really difficult to properly 
 
 **[Elastic Stack](https://www.elastic.co/)** is a powerful popular open source platform for search, logging, and analytics.
 
-![elastic]({{site.baseurl}}/assets/img/2021-02-09-elastic.png){: style="float: left"}
+![elastic]({{site.baseurl}}/assets/img/2021-02-22-elastic.png){: style="float: left"}
 
 **Elastic Cloud for Kubernetes (ECK)** eliminates the need to invoke an instance of the platform running outside a Kubernetes environment.  ECK provides DevOps teams access to logs, metrics and application performance management (APM) capabilities along with security information event management (SIEM), machine learning and lifecycle management tools.  Elastic is making available a free-forever Basic tier instance of ECK.
 
@@ -28,7 +28,7 @@ We will go through the steps how to instrument an .NET Core application to ship 
 
 The image below gives an overview of what we will implement today.
 
-![crd]({{site.baseurl}}/assets/img/2021-02-09-design.png)
+![crd]({{site.baseurl}}/assets/img/2021-02-22-design.png)
 
 # 2. Installation Elastic Cloud for Kubernetes
 
@@ -44,16 +44,16 @@ In the first stage of our Azure DevOps pipeline **2-eck-pipeline.yml**, we insta
 [custom resource definitions (CRDs)]({[% post_url 2021-01-11-get-productive-with-azure-bicep-using-github-actions %](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/#customresourcedefinitions)}) to define the Elastic objects in simple configuration files.
 
 We can now verify which crd's are at our disposal after the installation of the Operator.
-![crd]({{site.baseurl}}/assets/img/2021-02-09-crd.png)
+![crd]({{site.baseurl}}/assets/img/2021-02-22-crd.png)
 
 For each of the Elastic components we have created a Kubernetes manifest file.  You can find back the manifest file in the Github repo under the folder **manifests**.
-![crd]({{site.baseurl}}/assets/img/2021-02-09-crd2.png)
+![crd]({{site.baseurl}}/assets/img/2021-02-22-crd2.png)
 
 After the successful run of our pipeline, we can view the result of the created Kubernetes services of our Elastic components.
-![svc]({{site.baseurl}}/assets/img/2021-02-09-svc.png)
+![svc]({{site.baseurl}}/assets/img/2021-02-22-svc.png)
 
 Inside the **elastic-system** namespace, we can view the Kubernetes Elastic pods.  The Filebeat and Metricbeat pods are running as a daemonset on each of the AKS worker nodes.
-![pods]({{site.baseurl}}/assets/img/2021-02-09-pods.png)
+![pods]({{site.baseurl}}/assets/img/2021-02-22-pods.png)
 
 To login to the Kibana portal, we need to get the auto-generated password.  Execute the following command to retrieve it and access the portal with the username **elastic**.
 
@@ -61,7 +61,7 @@ To login to the Kibana portal, we need to get the auto-generated password.  Exec
 kubectl get secret elasticsearch-es-elastic-user -n elastic-system -o go-template='{{.data.elastic | base64decode}}'
 {% endraw %}```
 
-![dotnet]({{site.baseurl}}/assets/img/2021-02-09-login.png)
+![dotnet]({{site.baseurl}}/assets/img/2021-02-22-login.png)
 
 # 3. Application Performance Monitoring
 
@@ -69,12 +69,12 @@ We are going to create a .NET Core application and setup application performance
 
 From VSCode we create our new .NET Core application "the bank".
 
-![dotnet]({{site.baseurl}}/assets/img/2021-02-09-dotnet.gif)
+![dotnet]({{site.baseurl}}/assets/img/2021-02-22-dotnet.gif)
 
 ## 3.1 Install nuget package
 
 To be able to send telemetry data of our application to Elastic, we first install the Elastic **[Nuget](https://www.nuget.org/)** package.
-![nuget]({{site.baseurl}}/assets/img/2021-02-09-nuget.png)
+![nuget]({{site.baseurl}}/assets/img/2021-02-22-nuget.png)
 
 ## 3.2 Update startup.cs
 
@@ -82,14 +82,14 @@ As a second step, we are going to make the necessary changes to our application 
 The following changes are made to the **startup.cs** file of our application:
 - **Line 11**: reference to the nuget Elastic package
 - **Line 43**: add the method UseAllElasticApm()
-![startup]({{site.baseurl}}/assets/img/2021-02-09-startup.png)
+![startup]({{site.baseurl}}/assets/img/2021-02-22-startup.png)
 
 ## 3.3 Adjust appsettings.json
 
 In the *appsettings.json* file we make the following changes:
 - Add **elastic.apm** to loglevel
 - Add the **apmserver url** (Kubernetes service external IP) with **secretToken** and name of our application
-![appsettings]({{site.baseurl}}/assets/img/2021-02-09-appsettings.png)
+![appsettings]({{site.baseurl}}/assets/img/2021-02-22-appsettings.png)
 
 The secretToken of the Elastic APM server can be found as a secret in Kubernetes.  Use the following command to get it.
 ```{% raw %}
@@ -108,22 +108,22 @@ The folder **manifests** in the root directory of our Azure DevOps project conta
 ```
 kubectl port-forward <pod-name> 80:80 --namespace <application_namespace>
 ```
-![port-fwd]({{site.baseurl}}/assets/img/2021-02-09-port-forward.gif)
+![port-fwd]({{site.baseurl}}/assets/img/2021-02-22-port-forward.gif)
 
 # 5. Results
 
 In the APM section of the Kibana portal, we can now view our application with some base metrics (latency, throughput, error rate %).
-![apm-svc]({{site.baseurl}}/assets/img/2021-02-09-apm-svc.png)
+![apm-svc]({{site.baseurl}}/assets/img/2021-02-22-apm-svc.png)
 
 The Elastic .NET agent recognizes that the application is running inside a Kubernetes cluster on Microsoft Azure.
 After accessing different parts of our demo .NET Core application we can view the metrics per transaction.
-![apm-latency]({{site.baseurl}}/assets/img/2021-02-09-apm-svc2.png)
+![apm-latency]({{site.baseurl}}/assets/img/2021-02-22-apm-svc2.png)
 
 The timeline is making clear how long the specific part of our application took to load.
-![apm-timeline]({{site.baseurl}}/assets/img/2021-02-09-apm-svc3.png)
+![apm-timeline]({{site.baseurl}}/assets/img/2021-02-22-apm-svc3.png)
 
 The **stream** page enables us to view all of the log events flowing in from the containers in a centralized view.
-![apm-timeline]({{site.baseurl}}/assets/img/2021-02-09-stream.png)
+![apm-timeline]({{site.baseurl}}/assets/img/2021-02-22-stream.png)
 
 # 6. Troubleshooting 
 
@@ -136,7 +136,7 @@ kubectl logs <apm-pod-name> --namespace elastic-system
 ## 6.2. Verify your application container log 
 
 The log file of your application should contain information about sending data to the Elastic APM server.
-![apm-timeline]({{site.baseurl}}/assets/img/2021-02-09-app-log.png)
+![apm-timeline]({{site.baseurl}}/assets/img/2021-02-22-app-log.png)
 
 If you see errors in this log file, it is most likely linked to unable to access the APM server.
 Verify by using the following command. 
@@ -148,11 +148,11 @@ The result should be a 200 OK.
 ## 6.3. Elastic APM Index
 
 Verify that the APM Index has been automatically created and contains documents.
-![apm-timeline]({{site.baseurl}}/assets/img/2021-02-09-index.png)
+![apm-timeline]({{site.baseurl}}/assets/img/2021-02-22-index.png)
 
 ## 6.4. APM API calls
 
 From the Kibana portal, you can execute API calls targetting the APMServer endpoints to verify document content.
-![apm-timeline]({{site.baseurl}}/assets/img/2021-02-09-dev.png)
+![apm-timeline]({{site.baseurl}}/assets/img/2021-02-22-dev.png)
 
 *The configuration we used in this post can be found on <https://GitHub.com/dewolfs/dotnetcore-elastic-aks>.*
