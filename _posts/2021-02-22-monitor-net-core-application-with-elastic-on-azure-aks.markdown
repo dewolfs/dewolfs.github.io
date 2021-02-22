@@ -41,7 +41,7 @@ We first start with the deployment of our infrastructure using an Azure DevOps p
 Once we have the infrastructure up and running we can start with the installation of the required Elastic components.  This will be executed via the ECK Kubernetes operator.  The operator helps us to automate the deployment, management and upgrade of Elasticsearch, Kibana, APMServer and Beats.
 
 In the first stage of our Azure DevOps pipeline **2-eck-pipeline.yml**, we install the Operator.  After this step we make use of the Kubernetes 
-[custom resource definitions (CRDs)]({[% post_url 2021-01-11-get-productive-with-azure-bicep-using-github-actions %](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/#customresourcedefinitions)}) to define the Elastic objects in simple configuration files.
+[custom resource definitions (CRDs)](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/#customresourcedefinitions) to define the Elastic objects in simple configuration files.
 
 We can now verify which crd's are at our disposal after the installation of the Operator.
 ![crd]({{site.baseurl}}/assets/img/2021-02-22-crd.png)
