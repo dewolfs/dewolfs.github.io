@@ -53,7 +53,7 @@ Click on Notebooks > Upload File.
 Once the Notebook is visible, we can easily walk through the code blocks.
 Press the **play** button in de code cell to execute the commands.  The output can be viewed directly.
 
-![Jupyter]({{site.baseurl}}/assets/img/2021-03-08-Jupyter.png)
+![Jupyter]({{site.baseurl}}/assets/img/2021-03-08-jupyter.png)
 
 ## 2.2 Upload JSON data
 
@@ -63,7 +63,7 @@ Press the **play** button in de code cell to execute the commands.  The output c
 Within the Jupyter notebook, we can import the Python Panda library used for manipulating data and loading data into a pandas Dataframe.
 It allows us to visualize data that renders a data set as a graphic.
 
-![panda]({{site.baseurl}}/assets/img/2021-03-08-Jupyter-panda.png)
+![panda]({{site.baseurl}}/assets/img/2021-03-08-jupyter-panda.png)
 
 # 3. Setup cloud-native HTAP
 
