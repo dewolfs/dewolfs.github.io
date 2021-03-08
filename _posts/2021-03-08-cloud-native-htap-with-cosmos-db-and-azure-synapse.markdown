@@ -3,7 +3,7 @@ layout: post
 title: Cloud-native hybrid transactional and analytical processing with Cosmos DB and Azure Synapse
 date: 2021-03-08 05:30:20 +0300
 description: htap # Add post description (optional)
-img: 2021-03-08-htap.jpg # Add image post (optional)
+img: /assets/img/2021-03-08-htap.jpg # Add image post (optional)
 fig-caption: Photo By Troy Squillaci on Pexels # Add figcaption (optional)
 tags: [ Azure, Synapse, CosmosDB, HTAP, OLAP, OLTP ]
 ---
