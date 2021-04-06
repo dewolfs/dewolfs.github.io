@@ -3,7 +3,7 @@ layout: post
 title: Adopting progressive (canary) delivery with Flagger and service mesh Linkerd on Azure AKS
 date: 2021-04-06 05:30:20 +0300
 description: linkerd # Add post description (optional)
-img: 2021-04-06-linkerd.jpg # Add image post (optional)
+image: 2021-04-06-linkerd.jpg # Add image post (optional)
 fig-caption: Photo By Ethan Dow on Unsplash # Add figcaption (optional)
 tags: [ Azure, Kubernetes, AKS, linkerd, service mesh, Flagger]
 ---
