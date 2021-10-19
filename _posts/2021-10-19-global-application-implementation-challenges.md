@@ -30,7 +30,7 @@ The Azure Private Link integration is an industry first CDN capability that enab
 
 It is **the** solution to protect web applications without compromising on delivery speed.
 The image below gives an overview of what we will implement today.
-![Front Door]({{site.baseurl}}/assets/img/2021-10-19-design.PNG)
+![Front Door]({{site.baseurl}}/assets/img/2021-10-19-design.png)
 
 # 2. Configuration
 
