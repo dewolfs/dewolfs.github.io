@@ -56,8 +56,7 @@ git add package.json
 npx cz
 ```
 Using **npx cz** will present you a menu to construct the conventional commit.  Below you can see it in action.
-
-![commitizen]({{site.baseurl}}/assets/img/2021-11-30-cz-demo.gif)
+![commitizengif]({{site.baseurl}}/assets/img/2021-11-30-cz-demo.gif)
 
 Your Git commit history looks clean and standardized which will allow everybody within your team to understand better what has been changed over time.  
 ![commitizen]({{site.baseurl}}/assets/img/2021-11-30-githistory.png)
