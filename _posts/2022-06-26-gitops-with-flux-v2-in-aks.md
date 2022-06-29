@@ -77,7 +77,7 @@ We are using a Bicep template to install the Flux extension on our AKS cluster. 
 
 The deployment is executed as in [previous]({% post_url 2022-01-11-using-openid-tokens-with-github-actions-to-azure %}) blogpost using a Github workflow (**[001-deploy.yml](https://github.com/dewolfs/flux2-gitops-aks-iac/blob/main/.github/workflows/001-deploy.yml)**) with Open ID Connect.
 
-The image below is showing the **[Bicep template](https://github.com/dewolfs/flux2-aks/blob/main/deploy/iac-gitops.bicep)**:
+The image below is showing the **[Bicep template](https://github.com/dewolfs/flux2-gitops-aks-iac/blob/main/deploy/iac-gitops.bicep)**:
 ![bicep]({{site.baseurl}}/assets/img/2022-06-29-bicep.png)
 
 - **1)** The **Flux extension** is deployed on our AKS cluster.
@@ -87,7 +87,7 @@ The image below is showing the **[Bicep template](https://github.com/dewolfs/flu
 - **5)** The **apps-dev Kustomization** is located in the apps folder with a subfolder defining our DEV config.  It has a dependency on infra.
 - **6)** The **apps-prd Kustomization** is located in the apps folder with a subfolder defining our PRD config.  It has a dependency on apps-dev.
 
-Our **[Git repository](https://github.com/dewolfs/flux2-aks-apps)** contains 2 directories: apps and infra.
+Our **[Git repository](https://github.com/dewolfs/flux2-gitops-aks-apps)** contains 2 directories: apps and infra.
 You can think of the apps directory as storage for all of the applications that need to be deployed to a cluster. You might need to deploy different types of an application.  You will have different configurations for that application.
 
 In this case we are using the **[Kuard](https://github.com/kubernetes-up-and-running/kuard)** application that will bring up pod info and there are some overlays on top of this application that change things based on which environment it's running in:   
