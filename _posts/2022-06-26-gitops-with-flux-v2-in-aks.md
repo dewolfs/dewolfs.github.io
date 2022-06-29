@@ -75,7 +75,7 @@ In Flux v2 you can have dependencies between the Kustomizations.  Deploy everyth
 
 We are using a Bicep template to install the Flux extension on our AKS cluster.  So we programmatically deploy the AKS cluster, deploy the Flux v2 extension and deploy the Flux configuration on top of them to kind of bootstrap a cluster with the applications we need.  
 
-The deployment is executed as in [previous]({% post_url 2022-01-11-using-openid-tokens-with-github-actions-to-azure %}) blogpost using a Github workflow (**[001-deploy.yml](https://github.com/dewolfs/flux2-aks/blob/main/.github/workflows/001-deploy.yml)**) with Open ID Connect.
+The deployment is executed as in [previous]({% post_url 2022-01-11-using-openid-tokens-with-github-actions-to-azure %}) blogpost using a Github workflow (**[001-deploy.yml](https://github.com/dewolfs/flux2-gitops-aks-iac/blob/main/.github/workflows/001-deploy.yml)**) with Open ID Connect.
 
 The image below is showing the **[Bicep template](https://github.com/dewolfs/flux2-aks/blob/main/deploy/iac-gitops.bicep)**:
 ![bicep]({{site.baseurl}}/assets/img/2022-06-29-bicep.png)
