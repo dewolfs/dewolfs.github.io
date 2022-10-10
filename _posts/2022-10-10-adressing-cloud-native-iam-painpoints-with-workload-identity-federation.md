@@ -1,6 +1,6 @@
 ---
 layout: post
-title: 'Adressing the cloud native IAM painpoints with Workload Identity Federation'
+title: 'Addressing the cloud native IAM painpoints with Workload Identity Federation'
 date: 2022-10-10 02:30:20 +0300
 description: 'wi' # Add post description (optional)
 img: 2022-10-10-wi.jpg # Add image post (optional)
