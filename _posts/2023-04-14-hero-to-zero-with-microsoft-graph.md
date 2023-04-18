@@ -153,3 +153,5 @@ The **[Microsoft Graph X-Ray browser plugin](https://graphxray.merill.net)** sho
 **[Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer)** is a developer tool that lets you learn about Microsoft Graph APIs. Use Graph Explorer to try the APIs on the default sample tenant to explore capabilities, or sign in to your own tenant and use it as a prototyping tool to fulfill your app scenarios. This tool includes helpful features such as code snippets (C#, Java, JavaScript, Go and PowerShell), Microsoft Graph Toolkit and adaptive cards integration.
 
 ![explorer]({{site.baseurl}}/assets/img/2023-04-18-explorer.png)
+
+*The configuration we used in this post can be found on <https://github.com/dewolfs/graph-api-powershell-sdk>.*
