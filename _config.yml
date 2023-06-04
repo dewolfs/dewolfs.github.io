@@ -19,7 +19,11 @@ social-linkedin: samuel-de-wolf # add your Linkedin handle
 
 # Tracker
 # analytics: UA-168839483-1 # Google Analytics old
-google_analytics: G-DPJEL04RP2
+analytics: 
+  provider: google-gtag
+  google:
+    tracking_id: G-DPJEL04RP2
+    anonymize_ip: false
 
 # Build Settings
 markdown: kramdown
